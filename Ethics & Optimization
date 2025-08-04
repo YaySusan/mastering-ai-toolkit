@@ -1,0 +1,55 @@
+Part 3: Ethics & Optimization (10%)
+1. Ethical Considerations
+A. Bias in the MNIST Model
+Although the MNIST dataset is widely used and relatively clean, it lacks diversity in handwriting styles, which may lead to biased performance on data from users with different cultural or writing backgrounds.
+
+This model might misclassify digits written by individuals with dysgraphia or other motor challenges.
+Mitigation Strategy:
+- Use TensorFlow Fairness Indicators to analyze model performance across subgroups (e.g., based on handwriting style clusters).
+- Augment the training data with synthetically generated digits that simulate diverse writing patterns.
+B. Bias in Amazon Review NER and Sentiment Analysis
+spaCy's pre-trained models may not perform equally well across languages, dialects, or informal text.
+
+Rule-based sentiment analysis may incorrectly interpret sarcasm or culturally specific expressions.
+Mitigation Strategy:
+- Enhance rule-based sentiment with domain-specific rules for context-aware sentiment tagging.
+- Supplement spaCy’s NER with fine-tuning using annotated product review datasets to capture brand-specific entities better.
+2. Troubleshooting Challenge: TensorFlow Script Debugging
+A. Dimension Mismatches
+Issue: The Input shape to the CNN may not match the model's expectation (e.g., feeding a flat vector into a Conv2D layer).
+Fix: Reshape input using x_train = x_train.reshape(-1, 28, 28, 1) before feeding into the model.
+B. Incorrect Loss Functions
+Issue: Using binary_crossentropy for a multi-class classification problem like MNIST.
+Fix: Replace with sparse_categorical_crossentropy if labels are integers or categorical_crossentropy if one-hot encoded.
+C. Overfitting or Poor Accuracy
+Fixes:
+- Use dropout or batch normalization layers.
+- Monitor training with validation loss and use early stopping.
+Example Fix for Loss Function and Shape:
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+x_train = x_train.reshape(-1, 28, 28, 1)
+x_test = x_test.reshape(-1, 28, 28, 1)
+Bonus Task (Optional – Extra 10%)
+To deploy the MNIST classifier:
+
+- Use Streamlit for quick UI prototyping.
+- Build an interface to upload a digit image and return the predicted label.
+- Share a live demo via ngrok or Streamlit Cloud.
+Example Streamlit Code Snippet:
+import streamlit as st
+import tensorflow as tf
+import numpy as np
+from PIL import Image
+
+model = tf.keras.models.load_model('mnist_model.h5')
+st.title("MNIST Digit Classifier")
+
+uploaded_file = st.file_uploader("Choose an image", type=["jpg", "png"])
+if uploaded_file is not None:
+    image = Image.open(uploaded_file).convert('L').resize((28, 28))
+    img_array = np.array(image).reshape(1, 28, 28, 1)/255.0
+    prediction = model.predict(img_array)
+    st.write(f"Predicted Digit: {np.argmax(prediction)}")
